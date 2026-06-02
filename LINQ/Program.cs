@@ -18,18 +18,18 @@ namespace LINQ
             while (true)
             {
                 Console.Clear();
-                Console.WriteLine("1. Show electronics");
-                Console.WriteLine("2. Show suppliers with low stock");
-                Console.WriteLine("3. Show total order value for the last month");
-                Console.WriteLine("4. Show top 3 best-selling products");
-                Console.WriteLine("5. Show categories and product counts");
-                Console.WriteLine("6. Show orders > 1000 kr with details");
-                Console.WriteLine("0. Exit");
-                Console.Write("Choose an option: ");
+                Console.WriteLine("1. Visa electronik");
+                Console.WriteLine("2. Visa leverantörer med lågt lager");
+                Console.WriteLine("3. Visa total ordervärde för den senaste månaden");
+                Console.WriteLine("4. Visa topp 3 bästsäljande produkter");
+                Console.WriteLine("5. Visa kategorier och produktantal");
+                Console.WriteLine("6. Visa beställningar > 1000 kr ");
+                Console.WriteLine("0. Avsluta");
+                Console.Write("Välj ett alternativ: ");
 
                 string choice = (Console.ReadLine() ?? "").Trim();
 
-                Console.WriteLine($"You entered: {choice}");
+                Console.WriteLine($"Du skrev: {choice}");
 
                 switch (choice)
                 {
@@ -67,7 +67,7 @@ namespace LINQ
                         return;
 
                     default:
-                        Console.WriteLine("Invalid choice.");
+                        Console.WriteLine("Ogilitigt val.");
                         Pause();
                         break;
                 }
@@ -80,42 +80,42 @@ namespace LINQ
         {
             try
             {
-                Console.WriteLine($"Categories count: {context.Categories.Count()}");
-                Console.WriteLine($"Products count: {context.Products.Count()}");
+                Console.WriteLine($"Antal kategorier : {context.Categories.Count()}");
+                Console.WriteLine($"Antal produkter: {context.Products.Count()}");
                 Console.WriteLine();
 
                 var query = context.Products
                     .Include(p => p.Category)
                     .ToList();
 
-                Console.WriteLine($"Loaded products: {query.Count}");
+                Console.WriteLine($"Produkter i lager: {query.Count}");
                 Console.WriteLine();
 
                 var electronics = query
-                    .Where(p => p.Category != null && p.Category.Name == "Electronics")
+                    .Where(p => p.Category != null && p.Category.Name == "Electronik")
                     .OrderByDescending(p => p.Price)
                     .ToList();
 
                 if (!electronics.Any())
                 {
-                    Console.WriteLine("No electronics products found.");
+                    Console.WriteLine("Inga elektronikprodukter hittades.");
                     return;
                 }
 
                 foreach (var product in electronics)
                 {
-                    var categoryName = product.Category?.Name ?? "No category";
+                    var categoryName = product.Category?.Name ?? "Ingen kategori";
 
                     Console.WriteLine(
                         $"Id: {product.Id}, " +
-                        $"Name: {product.Name}, " +
-                        $"Price: {product.Price}, " +
-                        $"Category: {categoryName}");
+                        $"Namn: {product.Name}, " +
+                        $"Pris: {product.Price}, " +
+                        $"Kategori: {categoryName}");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("An error occurred:");
+                Console.WriteLine("Ett fel uppstod:");
                 Console.WriteLine(ex.Message);
             }
         }
@@ -131,11 +131,11 @@ namespace LINQ
                 return;
 
             context.Categories.AddRange(
-                new Category { Id = 1, Name = "Electronics", Description = "Elektronik och tekniska produkter" },
-                new Category { Id = 2, Name = "Home & Kitchen", Description = "Produkter för hemmet och köket" },
-                new Category { Id = 3, Name = "Clothing", Description = "Kläder och accessoarer" },
-                new Category { Id = 4, Name = "Sports", Description = "Sportutrustning och träningsprodukter" },
-                new Category { Id = 5, Name = "Books", Description = "Böcker och litteratur" }
+                new Category { Id = 1, Name = "Electronik", Description = "Elektronik och tekniska produkter" },
+                new Category { Id = 2, Name = "Hem & Kök", Description = "Produkter för hemmet och köket" },
+                new Category { Id = 3, Name = "Kläder", Description = "Kläder och accessoarer" },
+                new Category { Id = 4, Name = "Sport", Description = "Sportutrustning och träningsprodukter" },
+                new Category { Id = 5, Name = "Böcker", Description = "Böcker och litteratur" }
             );
 
             context.Suppliers.AddRange(
@@ -211,7 +211,7 @@ namespace LINQ
         public static void Pause()
         {
             Console.WriteLine();
-            Console.WriteLine("Press any key to continue...");
+            Console.WriteLine("Tryck på valfri tangent för att fortsätta...");
             Console.ReadKey();
         }
 
@@ -224,13 +224,13 @@ namespace LINQ
 
             if (!suppliers.Any())
             {
-                Console.WriteLine("No suppliers found with products under 10 in stock.");
+                Console.WriteLine("Inga leverantörer hittades med produkter under 10 i lager.");
                 return;
             }
 
             foreach (var supplier in suppliers)
             {
-                Console.WriteLine($"Supplier: {supplier.Name}");
+                Console.WriteLine($"Leverantör: {supplier.Name}");
 
                 var lowStockProducts = supplier.Products
                     .Where(p => p.StockQuantity < 10)
@@ -239,7 +239,7 @@ namespace LINQ
                 foreach (var product in lowStockProducts)
                 {
                     Console.WriteLine(
-                        $"   Product: {product.Name}, Stock: {product.StockQuantity}");
+                        $"   Produkt: {product.Name}, Lager st: {product.StockQuantity}");
                 }
 
                 Console.WriteLine();
@@ -258,7 +258,7 @@ namespace LINQ
             double totalOrderValue = ordersLastMonth.Sum(o => o.TotalAmount); 
 
             Console.WriteLine(
-                $"Total order value for the last 30 days: {totalOrderValue} kr");
+                $"Totalt ordervärde för de senaste 30 dagarna: {totalOrderValue} kr");
 
             var allOrders = context.Orders.ToList();
 
@@ -286,15 +286,15 @@ namespace LINQ
 
             if (!topProducts.Any())
             {
-                Console.WriteLine("No order details found.");
+                Console.WriteLine("Inga orderuppgifter hittades.");
                 return;
             }
 
-            Console.WriteLine("Top 3 most sold products (by quantity):");
+            Console.WriteLine("Topp 3 mest sålda produkter (efter kvantitet):");
             foreach (var item in topProducts)
             {
                 Console.WriteLine(
-                    $"Product: {item.ProductName}, Total sold: {item.TotalQuantity}");
+                    $"Produkt: {item.ProductName}, Totalt sålt: {item.TotalQuantity}");
             }
         }
 
@@ -310,15 +310,15 @@ namespace LINQ
 
             if (!categoryCounts.Any())
             {
-                Console.WriteLine("No categories found.");
+                Console.WriteLine("Inga kategorier hittades.");
                 return;
             }
 
-            Console.WriteLine("Categories and product counts:");
+            Console.WriteLine("Kategorier och produktantal:");
             foreach (var item in categoryCounts)
             {
                 Console.WriteLine(
-                    $"Category: {item.CategoryName}, Products: {item.ProductCount}");
+                    $"Kategori: {item.CategoryName}, Produkter: {item.ProductCount}");
             }
         }
 
@@ -333,20 +333,20 @@ namespace LINQ
 
             if (!orders.Any())
             {
-                Console.WriteLine("No orders found over 1000 kr.");
+                Console.WriteLine("Inga beställningar över 1000 kr hittades.");
                 return;
             }
 
             foreach (var order in orders)
             {
                 Console.WriteLine(
-                    $"Order ID: {order.Id}, Date: {order.OrderDate:yyyy-MM-dd}, " +
-                    $"Customer: {order.Customer.Name}, Total: {order.TotalAmount} kr, Status: {order.Status}");
+                    $"Order ID: {order.Id}, Datum: {order.OrderDate:yyyy-MM-dd}, " +
+                    $"Kund: {order.Customer.Name}, Totalt: {order.TotalAmount} kr, Status: {order.Status}");
 
                 foreach (var detail in order.OrderDetails)
                 {
                     Console.WriteLine(
-                        $"   Product: {detail.Product.Name}, Qty: {detail.Quantity}, Unit price: {detail.UnitPrice} kr");
+                        $"   Produkt: {detail.Product.Name}, Mängd: {detail.Quantity}, A-pris: {detail.UnitPrice} kr");
                 }
 
                 Console.WriteLine();
