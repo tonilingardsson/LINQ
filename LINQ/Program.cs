@@ -23,6 +23,7 @@ namespace LINQ
                 Console.WriteLine("3. Show total order value for the last month");
                 Console.WriteLine("4. Show top 3 best-selling products");
                 Console.WriteLine("5. Show categories and product counts");
+                Console.WriteLine("6. Show orders > 1000 kr with details");
                 Console.WriteLine("0. Exit");
                 Console.Write("Choose an option: ");
 
@@ -52,10 +53,15 @@ namespace LINQ
                         Pause();
                         break;
 
-                        case "5":
-                            ShowCategoryProductCounts(context);
-                            Pause();
-                            break;
+                    case "5":
+                        ShowCategoryProductCounts(context);
+                        Pause();
+                        break;
+
+                    case "6":
+                        ShowHighValueOrders(context);
+                        Pause();
+                        break;
 
                     case "0":
                         return;
@@ -396,6 +402,43 @@ namespace LINQ
             {
                 Console.WriteLine(
                     $"Category: {item.CategoryName}, Products: {item.ProductCount}");
+            }
+        }
+
+        public static void ShowHighValueOrders(MyDbContext context)
+        {
+            const double threshold = 1000d;
+
+            var orders = context.Orders
+                .Where(o => o.TotalAmount > threshold)
+                .Include(o => o.Customer)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .ToList();
+
+            if (!orders.Any())
+            {
+                Console.WriteLine($"No orders found with total amount over {threshold} kr.");
+                return;
+            }
+
+            Console.WriteLine($"Orders with total amount over {threshold} kr:\n");
+
+            foreach (var order in orders)
+            {
+                Console.WriteLine(
+                    $"Order {order.Id} | Date: {order.OrderDate:d} | " +
+                    $"Customer: {order.Customer.Name} | Total: {order.TotalAmount} kr");
+
+                foreach (var detail in order.OrderDetails)
+                {
+                    var productName = detail.Product?.Name ?? "Unknown product";
+                    Console.WriteLine(
+                        $"   Product: {productName}, Qty: {detail.Quantity}, " +
+                        $"Unit price: {detail.UnitPrice} kr");
+                }
+
+                Console.WriteLine();
             }
         }
     }
