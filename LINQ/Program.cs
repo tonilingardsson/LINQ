@@ -194,35 +194,58 @@ namespace LINQ
                 }
             );
 
-            context.Orders.AddRange(
-                new Order
-                {
-                Id =1,
-                OrderDate = new DateTime(2026, 5, 1),
-                TotalAmount = 60000d,
-                Status = "Paid"},
-                new Order
-                {
-                Id =2,
-                OrderDate = new DateTime(2026, 5, 15),
-                TotalAmount = 20000d,
-                Status = "Paid"},
-                new Order
-                {
-                    Id = 3,
-                    OrderDate = new DateTime(2026, 5, 9),
-                    TotalAmount = 200d,
-                    Status = "Paid"
-                },
-                new Order
-                {
-                    Id = 4,
-                    OrderDate = DateTime.Now.AddDays(-5),
-                    TotalAmount = 45000d,
-                    Status = "Paid"
-                }
+            var customer1 = new Customer
+            {
+                Name = "Anna Andersson",
+                Email = "anna@example.com",
+                Phone = "070-1111111",
+                Address = "Main Street 1"
+            };
 
-            );
+            var customer2 = new Customer
+            {
+                Name = "Björn Berg",
+                Email = "bjorn@example.com",
+                Phone = "070-2222222",
+                Address = "Second Street 2"
+            };
+
+            context.Customers.AddRange(customer1, customer2);
+
+            context.Orders.AddRange(
+    new Order
+    {
+        Id = 1,
+        OrderDate = new DateTime(2026, 5, 1),
+        TotalAmount = 60000d,
+        Status = "Paid",
+        CustomerId = 1
+    },
+    new Order
+    {
+        Id = 2,
+        OrderDate = new DateTime(2026, 5, 15),
+        TotalAmount = 20000d,
+        Status = "Paid",
+        CustomerId = 1
+    },
+    new Order
+    {
+        Id = 3,
+        OrderDate = new DateTime(2026, 5, 9),
+        TotalAmount = 200d,
+        Status = "Paid",
+        CustomerId = 2
+    },
+    new Order
+    {
+        Id = 4,
+        OrderDate = DateTime.Now.AddDays(-5),
+        TotalAmount = 45000d,
+        Status = "Paid",
+        CustomerId = 2
+    }
+);
 
             context.OrderDetails.AddRange(
     new OrderDetail

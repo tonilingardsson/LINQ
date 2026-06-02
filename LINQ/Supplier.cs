@@ -10,7 +10,6 @@ namespace LINQ
         public string Email { get; set; } = null!;
         public string Phone { get; set; } = null!;
 
-        // One supplier can have many products
         public List<Product> Products { get; set; } = new List<Product>();
     }
 }
