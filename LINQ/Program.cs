@@ -1,48 +1,64 @@
 using LINQ;
+using LINQ.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace LINQ
 {
     internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             SQLitePCL.Batteries.Init();
             using var context = new MyDbContext();
-
-            context.Database.EnsureCreated();
-
+            context.Database.Migrate();
             SeedData(context);
 
-            bool running = true;
+            //bool running = true;
 
-            while (running)
+            while (true)
             {
                 Console.Clear();
-                Console.WriteLine("==== LINQ Menu ====");
-                Console.WriteLine("1. Show Electronic products sorted by price");
+                Console.WriteLine("1. Show electronics");
+                Console.WriteLine("2. Show suppliers with low stock");
+                Console.WriteLine("3. Show total order value for the last month");
+                Console.WriteLine("4. Show top 3 best-selling products");
+                Console.WriteLine("5. Show categories and product counts");
                 Console.WriteLine("0. Exit");
                 Console.Write("Choose an option: ");
 
-                string choice = Console.ReadLine();
+                string choice = (Console.ReadLine() ?? "").Trim();
+
+                Console.WriteLine($"You entered: {choice}");
 
                 switch (choice)
                 {
                     case "1":
-                        Console.Clear();
                         ShowElectronics(context);
                         Pause();
                         break;
 
                     case "2":
-                        Console.Clear();
                         ShowSuppliersWithLowStockProducts(context);
                         Pause();
                         break;
 
-                    case "0":
-                        running = false;
+                    case "3":
+                        ShowTotalOrderValueLastMonth(context);
+                        Pause();
                         break;
+
+                    case "4":
+                        ShowTop3MostSoldProducts(context);
+                        Pause();
+                        break;
+
+                        case "5":
+                            ShowCategoryProductCounts(context);
+                            Pause();
+                            break;
+
+                    case "0":
+                        return;
 
                     default:
                         Console.WriteLine("Invalid choice.");
@@ -51,6 +67,7 @@ namespace LINQ
                 }
             }
         }
+        
 
 
         public static void ShowElectronics(MyDbContext context)
@@ -99,7 +116,7 @@ namespace LINQ
 
         public static void SeedData(MyDbContext context)
         {
-            if (context.Categories.Any() || context.Products.Any())
+            if (context.Categories.Any() || context.Products.Any() || context.Orders.Any())
                 return;
 
             var electronics = new Category
@@ -137,32 +154,110 @@ namespace LINQ
             context.Products.AddRange(
                 new Product
                 {
+                    Id = 1,
                     Name = "Laptop",
                     Description = "Gaming laptop",
-                    Price = 15000m,
+                    Price = 15000d,
                     StockQuantity = 8,
                     Category = electronics,
                     Supplier = supplier1
                 },
                 new Product
                 {
+                    Id = 2,
                     Name = "Smartphone",
                     Description = "Latest model smartphone",
-                    Price = 599.99m,
+                    Price = 600d,
                     StockQuantity = 15,
                     Category = electronics,
                     Supplier = supplier1
                 },
                 new Product
                 {
+                    Id = 3,
                     Name = "Novel",
                     Description = "Fictional novel",
-                    Price = 19.99m,
+                    Price = 20d,
                     StockQuantity = 100,
                     Category = books,
                     Supplier = supplier2
+                },
+                new Product
+                {
+                    Id = 4,
+                    Name = "E-book Reader",
+                    Description = "Portable e-book reader",
+                    Price = 5000d,
+                    StockQuantity = 5,
+                    Category = electronics,
+                    Supplier = supplier1
                 }
             );
+
+            context.Orders.AddRange(
+                new Order
+                {
+                Id =1,
+                OrderDate = new DateTime(2026, 5, 1),
+                TotalAmount = 60000d,
+                Status = "Paid"},
+                new Order
+                {
+                Id =2,
+                OrderDate = new DateTime(2026, 5, 15),
+                TotalAmount = 20000d,
+                Status = "Paid"},
+                new Order
+                {
+                    Id = 3,
+                    OrderDate = new DateTime(2026, 5, 9),
+                    TotalAmount = 200d,
+                    Status = "Paid"
+                },
+                new Order
+                {
+                    Id = 4,
+                    OrderDate = DateTime.Now.AddDays(-5),
+                    TotalAmount = 45000d,
+                    Status = "Paid"
+                }
+
+            );
+
+            context.OrderDetails.AddRange(
+    new OrderDetail
+    {
+        Id = 1,
+        OrderId = 1,
+        ProductId = 1,
+        Quantity = 4,
+        UnitPrice = 15000d
+    },
+    new OrderDetail
+    {
+        Id = 2,
+        OrderId = 2,
+        ProductId = 2,
+        Quantity = 2,
+        UnitPrice = 1200d
+    },
+    new OrderDetail
+    {
+        Id = 3,
+        OrderId = 3,
+        ProductId = 3,
+        Quantity = 1,
+        UnitPrice = 20d
+    },
+    new OrderDetail
+    {
+        Id = 4,
+        OrderId = 4,
+        ProductId = 1,
+        Quantity = 3,
+        UnitPrice = 15000d
+    }
+);
 
             context.SaveChanges();
         }
@@ -202,6 +297,82 @@ namespace LINQ
                 }
 
                 Console.WriteLine();
+            }
+        }
+
+        public static void ShowTotalOrderValueLastMonth(MyDbContext context)
+        {
+            var fromDate = DateTime.Now.AddDays(-30);
+
+            var ordersLastMonth = context.Orders
+                .Where(o => o.OrderDate >= fromDate)
+                .ToList();
+
+
+            double totalOrderValue = ordersLastMonth.Sum(o => o.TotalAmount); 
+
+            Console.WriteLine(
+                $"Total order value for the last 30 days: {totalOrderValue} kr");
+
+            var allOrders = context.Orders.ToList();
+
+            foreach (var order in allOrders)
+            {
+                Console.WriteLine($"{order.Id} - {order.OrderDate} - {order.TotalAmount}");
+            }
+
+        }
+
+        public static void ShowTop3MostSoldProducts(MyDbContext context)
+        {
+            var topProducts = context.OrderDetails
+                .Include(od => od.Product)
+                .GroupBy(od => new { od.ProductId, od.Product.Name })
+                .Select(g => new
+                {
+                    ProductId = g.Key.ProductId,
+                    ProductName = g.Key.Name,
+                    TotalQuantity = g.Sum(od => od.Quantity)
+                })
+                .OrderByDescending(x => x.TotalQuantity)
+                .Take(3)
+                .ToList();
+
+            if (!topProducts.Any())
+            {
+                Console.WriteLine("No order details found.");
+                return;
+            }
+
+            Console.WriteLine("Top 3 most sold products (by quantity):");
+            foreach (var item in topProducts)
+            {
+                Console.WriteLine(
+                    $"Product: {item.ProductName}, Total sold: {item.TotalQuantity}");
+            }
+        }
+
+        public static void ShowCategoryProductCounts(MyDbContext context)
+        {
+            var categoryCounts = context.Categories
+                .Select(c => new
+                {
+                    CategoryName = c.Name,
+                    ProductCount = c.Products.Count()
+                })
+                .ToList();
+
+            if (!categoryCounts.Any())
+            {
+                Console.WriteLine("No categories found.");
+                return;
+            }
+
+            Console.WriteLine("Categories and product counts:");
+            foreach (var item in categoryCounts)
+            {
+                Console.WriteLine(
+                    $"Category: {item.CategoryName}, Products: {item.ProductCount}");
             }
         }
     }
