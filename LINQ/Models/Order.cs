@@ -1,6 +1,4 @@
-﻿using LINQ;
-
-namespace LINQ
+﻿namespace LINQ.Models
 {
     public class Order
 {

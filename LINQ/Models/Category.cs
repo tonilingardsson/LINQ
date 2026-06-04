@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace LINQ
+namespace LINQ.Models
 {
     public class Category
     {
@@ -8,6 +8,7 @@ namespace LINQ
         public string Name { get; set; }
         public string Description { get; set; }
 
-        public List<Product> Products { get; set; } = new List<Product>();
+        public List<Product> Products { get; set; } = new List<Product>(); // ICollections is better
+
     }
 }

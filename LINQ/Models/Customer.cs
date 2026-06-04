@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace LINQ
+namespace LINQ.Models
 {
     public class Customer
     {

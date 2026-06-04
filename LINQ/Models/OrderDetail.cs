@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 
-namespace LINQ
+namespace LINQ.Models
 {
     public class OrderDetail
     {
